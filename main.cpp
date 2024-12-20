@@ -6,10 +6,12 @@
 
 using namespace std;
 
-color ray_color(const ray& r) {
-    return color(0, 0, 0);
-}
 
+color ray_color(const ray& r) {
+    vec3 unit_direction = unit_vector(r.direction());
+    auto a = 0.5 * (unit_direction.y() + 1.0);
+    return (1.0 - a) * color(1.0,1.0,1.0) + a*color(0.5,0.7,1.0);
+}
 
 int main() {
     // creating the camera and viewport need this is used to
@@ -29,7 +31,7 @@ int main() {
 
         // Create vectors along the view port to point the rays at
         auto viewport_u = vec3(viewport_width, 0, 0);
-        auto viewport_v = vec3(0, viewport_height, 0);
+        auto viewport_v = vec3(0, -viewport_height, 0);
 
         // calculate the horizontal and vertical delta, so I can use them to split the viewport into a grid.
         auto pixel_delta_u = viewport_u/ image_width;
@@ -48,7 +50,7 @@ int main() {
         for (int j = 0; j< image_height; j++) {
             clog << "\rScanlines remaining: " << (image_height - j) << " "<< flush;
             for (int i = 0; i < image_width; i++){
-                auto pixel_center = pixel00_loc + (i*pixel_delta_u) + (j*pixel_delta_v);
+                auto pixel_center = pixel00_loc + (i * pixel_delta_u) + ( j * pixel_delta_v);
                 auto ray_direction = pixel_center - camera_center;
                 ray r(camera_center, ray_direction);
 
