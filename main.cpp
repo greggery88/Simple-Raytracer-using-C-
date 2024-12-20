@@ -31,7 +31,7 @@ int main() {
         auto viewport_u = vec3(viewport_width, 0, 0);
         auto viewport_v = vec3(0, viewport_height, 0);
 
-        // calculate the horizontal and vertical delta so i can use them to split the viewport into a grid.
+        // calculate the horizontal and vertical delta, so I can use them to split the viewport into a grid.
         auto pixel_delta_u = viewport_u/ image_width;
         auto pixel_delta_v = viewport_v / image_height;
 
@@ -41,18 +41,22 @@ int main() {
 
         auto pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 
+    // this part of the code makes and formats the file because.
+        // opens the file allow it to write it in the correct format
+        cout << "P3\n" << image_width << " " << image_height << "\n255\n";
 
-    // opens the file allow it to write it in the correct format
-    cout << "P3\n" << image_width << " " << image_height << "\n255\n";
+        for (int j = 0; j< image_height; j++) {
+            clog << "\rScanlines remaining: " << (image_height - j) << " "<< flush;
+            for (int i = 0; i < image_width; i++){
+                auto pixel_center = pixel00_loc + (i*pixel_delta_u) + (j*pixel_delta_v);
+                auto ray_direction = pixel_center - camera_center;
+                ray r(camera_center, ray_direction);
 
-    for (int j = 0; j< image_height; j++) {
-        clog << "\rScanlines remaining: " << (image_height - j) << " "<< flush;
-        for (int i = 0; i < image_width; i++){
-            auto pixel_color = color(double(i)/(image_width -1), double(j)/(image_height - 1), 0.5);
-            write_color(std::cout, pixel_color);
+                color pixel_color = ray_color(r);
+                write_color(cout, pixel_color);
+            }
+
         }
-
-    }
-    clog << "\rDone.                  \n";
+        clog << "\rDone.                  \n";
 
 }
