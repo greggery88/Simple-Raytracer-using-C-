@@ -3,10 +3,7 @@
 //
 
 #ifndef VEC3_H
-
 #define VEC3_H
-#include <iostream>
-#include <ostream>
 
 class vec3 {
 public:
