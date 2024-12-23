@@ -24,7 +24,7 @@ class sphere : public hittable {
         // find the nearest root in exceptible range.
         auto root = (h - sqrtd)/a;
         if (!ray_t.surounds(root)) {
-            root = h + sqrtd/a;
+            root = (h + sqrtd)/a;
             if (!ray_t.surounds(root))
                 return false;
         }
