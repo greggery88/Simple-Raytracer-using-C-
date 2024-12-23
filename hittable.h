@@ -8,10 +8,12 @@
 
 class hit_record {
     public:
-    point3 p;
-    vec3 normal;
-    double t;
-    bool front_face;
+        point3 p;
+        vec3 normal;
+        double t;
+        bool front_face;
+
+
 
     void set_face_normal(const ray& r, const vec3& outward_normal) {
         // sets the hit recod normal vecter
@@ -24,7 +26,6 @@ class hit_record {
 class hittable {
 public:
     virtual ~hittable() = default;
-    virtual bool hit(const ray& r, double t_min,
-                        double t_max, hit_record& rec) const = 0;
+    virtual bool hit(const ray& r, interval ray_t, hit_record& rec) const = 0;
 };
 #endif //HITTABLE_H

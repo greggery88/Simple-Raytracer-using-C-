@@ -11,7 +11,7 @@ class sphere : public hittable {
     sphere(const point3 center, double radius)
                     : center(center), radius(std::fmax(0, radius)) {}
 
-    bool hit(const ray &r, double t_min, double t_max, hit_record &rec) const override {
+    bool hit(const ray &r, interval ray_t, hit_record &rec) const override {
         vec3 oc = center - r.origin();
         auto a = r.direction().length_squared();
         auto h = dot(oc, r.direction());
@@ -23,9 +23,9 @@ class sphere : public hittable {
 
         // find the nearest root in exceptible range.
         auto root = (h - sqrtd)/a;
-        if (root <= t_min || root <= t_max) {
+        if (!ray_t.surounds(root)) {
             root = h + sqrtd/a;
-            if (root <= t_min || root <= t_max)
+            if (!ray_t.surounds(root))
                 return false;
         }
         rec.t = root;
