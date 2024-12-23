@@ -15,7 +15,7 @@ class camera {
         double aspect_ratio = 1.0;
         int image_width = 100;
         int samples_per_pixel = 10;
-
+        int max_depth = 10;
 
 
         void render(const hittable& world) {
@@ -46,6 +46,7 @@ class camera {
         point3 pixel00_loc;        // locations of pixel 0, 0
         vec3 pixel_delta_u;        // Offset to pixel to teh right.
         vec3 pixel_delta_v;        // Offset to pixel below
+
 
 
 
@@ -98,7 +99,8 @@ class camera {
     color ray_color(const ray& r, const hittable& world) const {
         hit_record rec;
         if (world.hit(r,interval(0, infinity), rec)) {
-            return 0.5 * (rec.normal + color(1, 1, 1));
+            vec3 direction = random_in_hemisphere(rec.normal);
+            return 0.5 * ray_color(ray(rec.p, direction), world);
         }
 
         vec3 unit_direction = unit_vector(r.direction());
