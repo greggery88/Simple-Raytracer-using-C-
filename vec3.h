@@ -106,12 +106,12 @@ inline vec3 random_unit_vector() {
     }
 }
 
-inline vec3 random_in_hemisphere(vec3& normal) {
-    auto on_unit_hemisphere = random_unit_vector();
-    if (dot(on_unit_hemisphere, normal) > 0)
-        return on_unit_hemisphere;
-    else
-        return -on_unit_hemisphere;
+inline vec3 random_in_unit_disk(){
+    while (true) {
+        auto p = vec3(random_double(-1, 1), random_double(-1, 1), 0);
+        if (p.length()<1)
+            return p;
+    }
 }
 inline vec3 reflect(const vec3& v, const vec3& n) {
     return v - 2*dot(v,n)*n;

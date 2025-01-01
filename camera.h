@@ -17,6 +17,14 @@ class camera {
         int samples_per_pixel = 10;
         int max_depth = 10;
 
+        double vfov = 90;
+        point3 lookfrom = point3(0, 0, 0);
+        point3 lookat = point3(0, 0, -1);
+        vec3 vup = vec3(0, 1, 0);
+
+        double defocus_angle = 0; //variations anlge of rays through pixel
+        double focus_distance = 10; // distance from camera lookfrom point of perfect focus
+
 
         void render(const hittable& world) {
             initialize();
@@ -52,6 +60,9 @@ class camera {
         point3 pixel00_loc;        // locations of pixel 0, 0
         vec3 pixel_delta_u;        // Offset to pixel to teh right.
         vec3 pixel_delta_v;        // Offset to pixel below
+        vec3 u, v, w;              // camera frame basics vecters
+        vec3 defocus_disk_u;       // horisonatl radius fo dist
+        vec3 defocus_disk_v;       // vertical radius of disk
 
 
 
@@ -62,16 +73,22 @@ class camera {
         image_height = (image_height < 1) ? 1 : image_height;
 
         sample_pixel_scale = 1.0/ samples_per_pixel;
-        center = point3(0, 0, 0);
+
+        center = lookfrom;
 
         // Determine viewport dimensions
-        auto focal_length = 1.0;
-        auto viewport_height = 2.0;
+        auto theta = degrees_to_radians(vfov);
+        auto h = tan(theta/2);
+        auto viewport_height = 2.0 * h * focus_distance;
         auto viewport_width = viewport_height * double(image_width)/image_height;
 
+        // Calculate the u,v,w unit basis vecvtors for the camera coordinates frame.
+        w = unit_vector(lookfrom - lookat);
+        u = unit_vector(cross(vup, w));
+        v = unit_vector(cross(w, u));
         // Calculate the vectors across the horizontal and down the verticle viewport edges.
-        auto viewport_u = vec3(viewport_width, 0, 0);
-        auto viewport_v = vec3(0, -viewport_height, 0);
+        auto viewport_u = viewport_width * u;   // vector across viewport horezontral edge
+        auto viewport_v = viewport_height * -v; // vector down viewport vertical edge.
 
         // Calculate the delta vectors
         pixel_delta_u = viewport_u/ image_width;
@@ -79,28 +96,38 @@ class camera {
 
         // Calculate the horizontal and vertical delta vectors from pixel to pixel.
         auto viewport_upper_left =
-            center - vec3(0,0,focal_length) - viewport_u/2 - viewport_v/2;
+                    center - (focus_distance * w) - viewport_u/2 - viewport_v/2;
         pixel00_loc = viewport_upper_left + 0.5*(pixel_delta_u + pixel_delta_v);
 
-
+        // Calculate the camera defocus disk basis vectors.
+        auto defocus_radius = focus_distance * tan(degrees_to_radians(defocus_angle / 2));
+        defocus_disk_u = u*defocus_radius;
+        defocus_disk_v = v*defocus_radius;
     }
 
     ray get_ray(int i, int j) const {
-        auto offset = sample_squared();
+        auto offset = sample_square();
         auto pixel_sample = pixel00_loc
                 + ((i + offset.x())*pixel_delta_u)
                 + ((j + offset.y())*pixel_delta_v);
 
-        auto ray_origin = center;
+        auto ray_origin = (defocus_angle <= 0) ? center : defocus_disk_sample();
         auto ray_direction = pixel_sample - ray_origin;
 
         return ray(ray_origin, ray_direction);
     }
 
-    vec3 sample_squared() const {
+    vec3 sample_square() const {
         // returns the vector to a random point
         return vec3(random_double()-0.5, random_double() -0.5, 0);
     }
+
+    point3 defocus_disk_sample() const {
+        // return random point in the camera defocus disk
+        auto p = random_in_unit_disk();
+        return center + (p[0] * defocus_disk_u) + (p[1] * defocus_disk_v);
+    }
+
 
     color ray_color(const ray& r, int depth, const hittable& world) const {
         if (depth <= 0) return color(0,0,0);
