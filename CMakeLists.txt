@@ -12,4 +12,5 @@ add_executable(RayTracing main.cpp
         hittable_list.h
         rtpproject.h
         interval.h
-        camera.h)
+        camera.h
+        material.h)
