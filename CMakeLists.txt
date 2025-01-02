@@ -13,4 +13,6 @@ add_executable(RayTracing main.cpp
         rtpproject.h
         interval.h
         camera.h
-        material.h)
+        material.h
+        presets.h
+        cmake-build-release/AAbb.h)

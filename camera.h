@@ -26,11 +26,9 @@ class camera {
         double focus_distance = 10; // distance from camera lookfrom point of perfect focus
 
 
-        void render(const hittable& world) {
+        void render(const hittable& world, char* file_name) {
             initialize();
-            std::ofstream outputFile("image.ppm");
-
-
+            std::ofstream outputFile(file_name);
 
             if (outputFile.is_open()) {
 
