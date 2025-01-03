@@ -15,4 +15,6 @@ add_executable(RayTracing main.cpp
         camera.h
         material.h
         presets.h
+        AABB.h
+        bvh.h
 )

@@ -26,7 +26,7 @@ class camera {
         double focus_distance = 10; // distance from camera lookfrom point of perfect focus
 
 
-        void render(const hittable& world, char* file_name) {
+        void render(const hittable& world, const char*file_name) {
             initialize();
             std::ofstream outputFile(file_name);
 
@@ -111,8 +111,9 @@ class camera {
 
         auto ray_origin = (defocus_angle <= 0) ? center : defocus_disk_sample();
         auto ray_direction = pixel_sample - ray_origin;
+        auto ray_time = random_double();
 
-        return ray(ray_origin, ray_direction);
+        return ray(ray_origin, ray_direction, ray_time);
     }
 
     vec3 sample_square() const {
