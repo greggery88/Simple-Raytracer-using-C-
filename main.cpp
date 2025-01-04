@@ -37,8 +37,7 @@ int main(int argc, char* argv[]) {
         cam.samples_per_pixel = 500;
         cam.max_depth         = 50;
 
-        char* filename = (char*)"test1"
-                                "qqq.ppm";
+        char* filename = (char*)"test1.ppm";
 
 
 
