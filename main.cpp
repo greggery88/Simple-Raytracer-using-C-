@@ -8,8 +8,52 @@
 #include "presets.h"
 #include "bvh.h"
 
+void test_if_ray_is_hitting_anything() {
+
+        auto material_right = make_shared<metal>(color(0.6,0.4,0.2), 0.5);
+
+        hittable_list world;
+
+        world.add(make_shared<sphere>(point3(0.0,0.0, -1.0), 0.6, material_right));
+
+        world = hittable_list(make_shared<bvh_node>(world));
+
+        ray r = ray(point3(0,0,0), vec3(.001, 0.0001, -1));
+
+        hit_record rec;
+        if (world.hit(r,interval(0.001, infinity), rec))
+                std::clog << "rays susesfully hitting" << std::endl;
+}
+
 int main(int argc, char* argv[]) {
-        render_many_balls_moving(400, 50, (char*)"test1.ppm");
+        // test_if_ray_is_hitting_anything();
+
+
+        camera cam;
+        hittable_list world;
+
+        cam.aspect_ratio      = 16.0 / 9.0;
+        cam.image_width       = 400;
+        cam.samples_per_pixel = 500;
+        cam.max_depth         = 50;
+
+        char* filename = (char*)"test1"
+                                "qqq.ppm";
+
+
+
+        render_many_balls_moving(cam, world, filename);
+
+
+
+
+
+
+
+
+
+
+
 
         // if (argc > 1) {
         //         if (strcmp("many_balls500", argv[1]) == 0) {

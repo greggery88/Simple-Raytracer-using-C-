@@ -7,10 +7,15 @@
 #include "bvh.h"
 #include "material.h"
 
-inline void render_many_balls( int pixel_width, int samples, char* filename) {
+inline void render_it(camera cam, hittable_list world, char* filename) {
     std::clog << filename <<std::endl;
-    camera cam;
-    hittable_list world;
+    world = hittable_list(make_shared<bvh_node>(world));
+    cam.render(world, filename);
+}
+
+
+inline void render_many_balls(camera cam, hittable_list world, char* filename) {
+
     auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
     world.add(make_shared<sphere>(point3(0,-1000,0), 1000, ground_material));
 
@@ -51,30 +56,23 @@ inline void render_many_balls( int pixel_width, int samples, char* filename) {
     auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
     world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
 
-
-    // set up the camera
-    cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = pixel_width;
-    cam.samples_per_pixel = samples;
-    cam.max_depth         = 50;
-
     cam.vfov     = 20;
-    cam.lookfrom = point3(13,2,3);
+    cam.lookfrom = point3(13,2,0);
     cam.lookat   = point3(0,0,0);
     cam.vup      = vec3(0,1,0);
 
     cam.defocus_angle = 0.6;
     cam.focus_distance    = 10.0;
 
-    cam.render(world, filename);
+    render_it(cam, world, filename);
 }
-inline void render_three_balls_on_green(hittable_list world, camera cam, int pixel_width, int samples) {
+inline void render_three_balls_on_green(camera cam, hittable_list world, char* filename) {
 
     auto material_ground = make_shared<lambertian>(color(0.8,0.8,0));
     auto material_center = make_shared<lambertian>(color(0.1,0.3,0.5));
     auto material_bubble = make_shared<dielectric>(1.5);
     auto material_left = make_shared<dielectric>(1.0/1.5);
-    auto material_right = make_shared<metal>(color(0.6,0.4,0.2), 0.5);
+    auto material_right = make_shared<metal>(color(0.6,0.4,0.2), 0.0);
 
     world.add(make_shared<sphere>(point3(0.0,-100.5, -1.0), 100.0, material_ground));
     world.add(make_shared<sphere>(point3(0.0,0.0, -1.2), 0.5, material_center));
@@ -82,25 +80,19 @@ inline void render_three_balls_on_green(hittable_list world, camera cam, int pix
     world.add(make_shared<sphere>(point3(1.0,0.0, -1.0), 0.6, material_right));
     world.add(make_shared<sphere>(point3(1, 0, -1), 0.5, material_bubble));
 
-    cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = pixel_width;
-    cam.samples_per_pixel = samples;
-    cam. max_depth = 50;
-
     cam.vfov = 20;
-    cam.lookfrom = point3(-2, 2, 1);
-    cam.lookat = point3(0, 0, -1);
+    cam.lookfrom = point3(-20, 20, 0);
+    cam.lookat = point3(0, 0, 0);
     cam.vup = point3(0, 1, 0);
 
-    cam.defocus_angle = 10.0;
+    cam.defocus_angle = 0.03;
     cam.focus_distance = 3.4;
+
+    render_it(cam, world, filename);
 }
-
-inline void render_many_balls_moving( int pixel_width, int samples, char* filename) {
-    std::clog << filename <<std::endl;
-
-    hittable_list world;
+inline void render_many_balls_moving(camera cam, hittable_list world, char* filename) {
     auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
+
     world.add(make_shared<sphere>(point3(0,-1000,0), 1000, ground_material));
 
     for (int a = -11; a < 11; a++) {
@@ -141,15 +133,9 @@ inline void render_many_balls_moving( int pixel_width, int samples, char* filena
     auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
     world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
 
-    world = hittable_list(make_shared<bvh_node>(world));
 
-    camera cam;
-    // set up the camera
-    cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = pixel_width;
-    cam.samples_per_pixel = samples;
-    cam.max_depth         = 50;
 
+    // set up the camera positioning and focus
     cam.vfov     = 20;
     cam.lookfrom = point3(13,2,3);
     cam.lookat   = point3(0,0,0);
@@ -158,8 +144,9 @@ inline void render_many_balls_moving( int pixel_width, int samples, char* filena
     cam.defocus_angle = 0.6;
     cam.focus_distance    = 10.0;
 
-    cam.render(world, filename);
+    render_it(cam, world, filename);
 }
+
 
 
 #endif //PRESETS_H
