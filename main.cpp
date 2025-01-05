@@ -8,9 +8,9 @@
 #include "presets.h"
 #include "bvh.h"
 
+
 void render_it(camera cam, hittable_list world, char* filename) {
     std::clog << filename <<std::endl;
-
     world = hittable_list(make_shared<bvh_node>(world));
     cam.render(world, filename);
 }
@@ -96,6 +96,8 @@ void render_many_balls_moving(camera cam, hittable_list world, char* filename) {
 
     auto checker = make_shared<checker_texture>(0.32, color(.2,.3,.1), color(.9,.9,.9));
     auto ground_material = make_shared<lambertian>(checker);
+    auto earth_texture = make_shared<image_texture>("Earthmap 1024x512.jpg");
+    auto earth_surface = make_shared<lambertian>(earth_texture);
 
     world.add(make_shared<sphere>(point3(0,-1000,0), 1000, ground_material));
 
@@ -132,7 +134,7 @@ void render_many_balls_moving(camera cam, hittable_list world, char* filename) {
     world.add(make_shared<sphere>(point3(0, 1, 0), 1.0, material1));
 
     auto material2 = make_shared<lambertian>(color(0.4, 0.2, 0.1));
-    world.add(make_shared<sphere>(point3(-4, 1, 0), 1.0, material2));
+    world.add(make_shared<sphere>(point3(-4, 1, 0), 1.0, earth_surface));
 
     auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
     world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
@@ -180,18 +182,34 @@ void render_checkered_sphers(camera cam, hittable_list world, char* filename) {
     cam.defocus_angle = 0;
     render_it(cam, world, filename);
 }
+void earth(camera cam, hittable_list world, char* filename) {
+
+    auto earth_texture = make_shared<image_texture>("Earthmap 1024x512.jpg");
+    auto earth_surface = make_shared<lambertian>(earth_texture);
+    world.add( make_shared<sphere>(point3(0,0,0), 2, earth_surface));
+
+    cam.vfov     = 20;
+    cam.lookfrom = point3(0,0,12);
+    cam.lookat   = point3(0,0,0);
+    cam.vup      = vec3(0,1,0);
+
+    cam.defocus_angle = 0;
+
+    render_it(cam, world, filename);
+}
+
+
 int main(int argc, char* argv[]) {
     camera cam;
     hittable_list world;
     cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = 400;
-    cam.samples_per_pixel = 100;
+    cam.image_width       = 1200;
+    cam.samples_per_pixel = 500;
     cam.max_depth         = 50;
 
 
-    char* filename = new char[strlen(argv[1])+strlen((char*)".ppm")+1];
-    strcpy(filename, argv[1]);
-    strcat(filename, ".ppm");
+
+char* filename = (char*)"earth.ppm";
 
     // std::clog << filename << "\n";
     switch (2) {
@@ -202,7 +220,8 @@ int main(int argc, char* argv[]) {
         case 2: render_many_balls_moving(cam,  world, filename); break;
 
         case 3: render_checkered_sphers(cam, world, filename); break;
-        default: break;
+        case 4: earth(cam, world, filename); break;
+
     }
 }
 

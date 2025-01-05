@@ -1,25 +1,23 @@
-//
-// Created by Jack Williamson on 1/5/25.
-//
-
-#ifndef RPP_STB_IMAGE_H
-#define RPP_STB_IMAGE_H
+#ifndef RTW_STB_IMAGE_H
+#define RTW_STB_IMAGE_H
 
 // Disable strict warnings for this header from the Microsoft Visual C++ compiler.
 #ifdef _MSC_VER
     #pragma warning (push, 0)
 #endif
 
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_FAILURE_USERMSG
 #include "external/stb_image.h"
 
 #include <cstdlib>
 #include <iostream>
 
-class rpp_image {
-    public:
-    rpp_image() {}
+class rtw_image {
+  public:
+    rtw_image() {}
 
-    rpp_image(const char* image_filename) {
+    rtw_image(const char* image_filename) {
         // Loads image data from the specified file. If the RTW_IMAGES environment variable is
         // defined, looks only in that directory for the image file. If the image was not found,
         // searches for the specified image file first from the current directory, then in the
@@ -28,10 +26,10 @@ class rpp_image {
         // width() and height() will return 0.
 
         auto filename = std::string(image_filename);
-        auto imagedir = getenv("RPP_IMAGES");
+        auto imagedir = getenv("RTW_IMAGES");
 
-        //hunt for the image file in some likely locatins.
-        if (imagedir && load(std::string(imagedir) + "/" + filename)) return;
+        // Hunt for the image file in some likely locations.
+        if (imagedir && load(std::string(imagedir) + "/" + image_filename)) return;
         if (load(filename)) return;
         if (load("images/" + filename)) return;
         if (load("../images/" + filename)) return;
@@ -41,15 +39,15 @@ class rpp_image {
         if (load("../../../../../images/" + filename)) return;
         if (load("../../../../../../images/" + filename)) return;
 
-        std::cerr << "ERROR: RPP_IMAGES load failed: could not load image file" << image_filename <<"'.\n";
-
+        std::cerr << "ERROR: Could not load image file '" << image_filename << "'.\n";
     }
 
-    ~rpp_image() {
+    ~rtw_image() {
         delete[] bdata;
         STBI_FREE(fdata);
     }
-    bool load(const std::string& image_filename) {
+
+    bool load(const std::string& filename) {
         // Loads the linear (gamma=1) image data from the given file name. Returns true if the
         // load succeeded. The resulting data buffer contains the three [0.0, 1.0]
         // floating-point values for the first pixel (red, then green, then blue). Pixels are
@@ -57,7 +55,7 @@ class rpp_image {
         // below, for the full height of the image.
 
         auto n = bytes_per_pixel; // Dummy out parameter: original components per pixel
-        fdata = stbi_load(filename.c_str(), &image_width, &image_hieght, &n, bytes_per_pixel);
+        fdata = stbi_loadf(filename.c_str(), &image_width, &image_height, &n, bytes_per_pixel);
         if (fdata == nullptr) return false;
 
         bytes_per_scanline = image_width * bytes_per_pixel;
@@ -65,15 +63,31 @@ class rpp_image {
         return true;
     }
 
-    private:
-    const int bytes_per_pixel = 3;
-    float *fdata = nullptr;
-    unsigned char *bdata = nullptr;
-    int image_width = 0;
-    int image_hieght = 0;
-    int bytes_per_scanline = 0;
+    int width()  const { return (fdata == nullptr) ? 0 : image_width; }
+    int height() const { return (fdata == nullptr) ? 0 : image_height; }
+
+    const unsigned char* pixel_data(int x, int y) const {
+        // Return the address of the three RGB bytes of the pixel at x,y. If there is no image
+        // data, returns magenta.
+        static unsigned char magenta[] = { 255, 0, 255 };
+        if (bdata == nullptr) return magenta;
+
+        x = clamp(x, 0, image_width);
+        y = clamp(y, 0, image_height);
+
+        return bdata + y*bytes_per_scanline + x*bytes_per_pixel;
+    }
+
+  private:
+    const int      bytes_per_pixel = 3;
+    float         *fdata = nullptr;         // Linear floating point pixel data
+    unsigned char *bdata = nullptr;         // Linear 8-bit pixel data
+    int            image_width = 0;         // Loaded image width
+    int            image_height = 0;        // Loaded image height
+    int            bytes_per_scanline = 0;
 
     static int clamp(int x, int low, int high) {
+        // Return the value clamped to the range [low, high).
         if (x < low) return low;
         if (x < high) return x;
         return high - 1;
@@ -86,6 +100,7 @@ class rpp_image {
             return 255;
         return static_cast<unsigned char>(256.0 * value);
     }
+
     void convert_to_bytes() {
         // Convert the linear floating point pixel data to bytes, storing the resulting byte
         // data in the `bdata` member.
@@ -101,12 +116,11 @@ class rpp_image {
         for (auto i=0; i < total_bytes; i++, fptr++, bptr++)
             *bptr = float_to_byte(*fptr);
     }
-
 };
 
 // Restore MSVC compiler warnings
 #ifdef _MSC_VER
-#pragma warning (pop)
+    #pragma warning (pop)
 #endif
 
-#endif //RPP_STB_IMAGE_H
+#endif
