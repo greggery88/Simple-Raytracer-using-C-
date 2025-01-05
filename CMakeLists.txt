@@ -19,4 +19,6 @@ add_executable(RayTracing main.cpp
         bvh.h
         texture.h
         rpp_stb_image.h
+        quad.h
+        triangle.h
 )
