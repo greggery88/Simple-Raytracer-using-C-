@@ -14,13 +14,14 @@ class sphere : public hittable {
         auto rvec = vec3(radius, radius, radius);
         bbox = aabb(static_center - rvec, static_center + rvec);
     }
-
+    // moving ball
     sphere(const point3& center1, const point3& center2, double radius, shared_ptr<material> mat)
-        : center(center1, center2 - center1), radius(std::fmax(0, radius)), mat(mat) {
+        : center(center1, center2 - center1), radius(std::fmax(0, radius)), mat(mat)
+    {
         auto rvec = vec3(radius, radius, radius);
-        aabb box1(center.at(0) - rvec, center.at(0) - rvec);
-        aabb box2(center.at(0) + rvec, center.at(0) + rvec);
-        bbox = aabb(center1 - center2, center2 - center1);
+        aabb box1(center.at(0) - rvec, center.at(0) + rvec);
+        aabb box2(center.at(1) - rvec, center.at(1) + rvec);
+        bbox = aabb(box1, box2);
     }
 
 
@@ -47,6 +48,7 @@ class sphere : public hittable {
         rec.p = r.at(rec.t);
         vec3 outward_normal = (rec.p  - current_center) / radius;
         rec.set_face_normal(r, outward_normal);
+        get_sphere_uv(outward_normal, rec.u, rec.v);
         rec.mat = mat;
 
         return true;
@@ -59,6 +61,15 @@ class sphere : public hittable {
         double radius;
         shared_ptr<material> mat;
         aabb bbox;
+
+    static void get_sphere_uv(const point3& p, double& u, double& v) {
+
+        auto theta = std::acos(-p.y());
+        auto phi = std::atan2(-p.z(), p.x()) + pi;
+
+        u = phi / (2 * pi);
+        v = theta/pi;
+    }
 };
 
 #endif //SPHERE_H

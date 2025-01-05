@@ -43,7 +43,7 @@ class hittable_list : public hittable {
     aabb bounding_box() const override { return bbox; }
 
     private:
-    aabb bbox;
+        aabb bbox;
 };
 
 #endif //HITTABLE_LIST_H

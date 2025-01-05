@@ -17,4 +17,6 @@ add_executable(RayTracing main.cpp
         presets.h
         AABB.h
         bvh.h
+        texture.h
+        rpp_stb_image.h
 )
