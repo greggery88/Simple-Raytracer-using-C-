@@ -5,7 +5,6 @@
 #include "hittable_list.h"
 #include "sphere.h"
 #include "material.h"
-#include "presets.h"
 #include "bvh.h"
 #include "quad.h"
 
@@ -102,8 +101,8 @@ void render_many_balls_moving(camera cam, hittable_list world, char* filename) {
 
     world.add(make_shared<sphere>(point3(0,-1000,0), 1000, ground_material));
 
-    for (int a = -11; a < 11; a++) {
-        for (int b = -11; b < 11; b++) {
+    for (int a = -5; a < 5; a++) {
+        for (int b = -5; b < 5; b++) {
             auto choose_mat = random_double();
             point3 center(a + 0.9*random_double(), 0.2, b + 0.9*random_double());
 
@@ -132,13 +131,28 @@ void render_many_balls_moving(camera cam, hittable_list world, char* filename) {
     }
 
     auto material1 = make_shared<dielectric>(1.5);
-    world.add(make_shared<sphere>(point3(0, 1, 0), 1.0, material1));
+    auto material2 = make_shared<dielectric>(1.4);
+    auto material3 = make_shared<dielectric>(1.3);
+    auto material4 = make_shared<dielectric>(1.2);
+    auto material5 = make_shared<dielectric>(1.1);
+    auto material6 = make_shared<dielectric>(1.0);
+    auto material7 = make_shared<dielectric>(0.9);
 
-    auto material2 = make_shared<lambertian>(color(0.4, 0.2, 0.1));
+    world.add(make_shared<sphere>(point3(0, 1, 0), 1.0, material1));
+    world.add(make_shared<sphere>(point3(0, 1, 0), 0.9, material1));
+    world.add(make_shared<sphere>(point3(0, 1, 0), 0.8, material2));
+    world.add(make_shared<sphere>(point3(0, 1, 0), 0.7, material2));
+    world.add(make_shared<sphere>(point3(0, 1, 0), 0.6, material2));
+    world.add(make_shared<sphere>(point3(0, 1, 0), 0.5, material2));
+    world.add(make_shared<sphere>(point3(0, 1, 0), 0.4, material2));
+
+
+
+
     world.add(make_shared<sphere>(point3(-4, 1, 0), 1.0, earth_surface));
 
-    auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
-    world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
+    auto materialb = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
+    world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, materialb));
 
 
 
@@ -148,7 +162,7 @@ void render_many_balls_moving(camera cam, hittable_list world, char* filename) {
     cam.lookat   = point3(0,0,0);
     cam.vup      = vec3(0,1,0);
 
-    cam.defocus_angle = 0.3;
+    cam.defocus_angle = 0.1;
     cam.focus_distance    = 10.0;
 
     render_it(cam, world, filename);
@@ -261,24 +275,69 @@ void cube(camera cam, hittable_list world, char* filename) {
     render_it(cam, world, filename);
 }
 
+void cornell_box(camera cam, hittable_list world, char* filename) {
+    auto red   = make_shared<lambertian>(color(.65, .05, .05));
+    auto white = make_shared<lambertian>(color(.73, .73, .73));
+    auto green = make_shared<lambertian>(color(.12, .45, .15));
+    auto light = make_shared<diffuse_light>(color(15, 15, 15));
+
+    world.add(make_shared<Quad>(point3(555,0,0), vec3(0,555,0), vec3(0,0,555), green));
+    world.add(make_shared<Quad>(point3(0,0,0), vec3(0,555,0), vec3(0,0,555), red));
+    world.add(make_shared<Quad>(point3(113, 554, 127), vec3(330,0,0), vec3(0,0,305), light));
+    world.add(make_shared<Quad>(point3(0,0,0), vec3(555,0,0), vec3(0,0,555), white));
+    world.add(make_shared<Quad>(point3(555,555,555), vec3(-555,0,0), vec3(0,0,-555), white));
+    world.add(make_shared<Quad>(point3(0,0,555), vec3(555,0,0), vec3(0,555,0), white));
 
 
+    cam.vfov     = 40;
+    cam.lookfrom = point3(278, 278, -800);
+    cam.lookat   = point3(278, 278, 0);
+    cam.vup      = vec3(0,1,0);
+
+    cam.defocus_angle = 0;
+
+    render_it(cam, world, filename);
+}
+
+void blackhole(camera cam, hittable_list world, char* filename) {
+    auto red   = make_shared<lambertian>(color(0.8, 0.8, 0.8));
+}
+
+void simpole_light(camera cam, hittable_list world, char* filename) {
+    auto earth_texture = make_shared<image_texture>("Earthmap 1024x512.jpg");
+    auto earth_surface = make_shared<lambertian>(earth_texture);
+    world.add(make_shared<sphere>(point3(0,-1000,0), 1000, earth_surface));
+    world.add(make_shared<sphere>(point3(0,2,0), 2, earth_surface));
+
+    auto difflight = make_shared<diffuse_light>(color(4,4,4));
+    world.add(make_shared<Quad>(point3(3,1,-2), vec3(2,0,0), vec3(0,2,0), difflight));
+
+    cam.vfov     = 20;
+    cam.lookfrom = point3(26,3,6);
+    cam.lookat   = point3(0,2,0);
+    cam.vup      = vec3(0,1,0);
+
+    cam.defocus_angle = 0;
+
+    render_it(cam, world, filename);
+}
 int main(int argc, char* argv[]) {
     camera cam;
     hittable_list world;
     cam.aspect_ratio      = 16.0 / 9.0;
-    cam.image_width       = 1200;
+    cam.image_width       = 400;
     cam.samples_per_pixel = 1000;
     cam.max_depth         = 50;
+    cam.background        = color(0,0,0);
 
 
     char* filename = new char[strlen(argv[1])+strlen((char*)".ppm")+1];
     strcpy(filename, argv[1]);
     strcat(filename, ".ppm");
-// char* filename = (char*)"earth.ppm";
+// char* filename = (char*)"th.ppm";
 
     // std::clog << filename << "\n";
-    switch (6) {
+    switch (7) {
         case 0: test_if_ray_is_hitting_anything(); break;
         case 1: render_many_balls(cam, world, filename); break;
         case 2: render_many_balls_moving(cam,  world, filename); break;
@@ -286,6 +345,9 @@ int main(int argc, char* argv[]) {
         case 4: earth(cam, world, filename); break;
         case 5: quads(cam, world, filename); break;
         case 6: cube(cam, world, filename); break;
+        case 7: cornell_box(cam, world, filename); break;
+        case 8: blackhole(cam, world, filename); break;
+        case 9: simpole_light(cam, world, filename); break;
 
     }
 }
